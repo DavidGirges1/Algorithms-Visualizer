@@ -1,0 +1,2426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algorithm Pseudocode Visualizer</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --accent: #38bdf8;
+      --accent-2: #a78bfa;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --bar: linear-gradient(180deg, #38bdf8, #2563eb);
+      --bar-active: linear-gradient(180deg, #f59e0b, #ea580c);
+      --bar-mid: linear-gradient(180deg, #a78bfa, #7c3aed);
+      --bar-sorted: linear-gradient(180deg, #4ade80, #16a34a);
+      --bar-target: linear-gradient(180deg, #f472b6, #db2777);
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 16px 40px rgba(0,0,0,0.28);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), transparent 25%),
+        radial-gradient(circle at top left, rgba(167, 139, 250, 0.12), transparent 24%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 920px;
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(17, 24, 39, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+    }
+
+    .panel-header h2,
+    .panel-header h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .panel-body {
+      padding: 16px 18px 18px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 18px;
+    }
+
+    .control-group {
+      display: grid;
+      gap: 10px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .control-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    label {
+      font-size: 0.86rem;
+      color: #cbd5e1;
+      display: grid;
+      gap: 6px;
+    }
+
+    input, select, button, textarea {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font: inherit;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 88px;
+      line-height: 1.45;
+    }
+
+    input[type="range"] {
+      padding: 0;
+    }
+
+    button {
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+      font-weight: 600;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(59, 130, 246, 0.18));
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    button.secondary {
+      background: rgba(148, 163, 184, 0.1);
+    }
+
+    .hint, .status-note {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .status-note strong {
+      color: #f8fafc;
+    }
+
+    .right-col {
+      display: grid;
+      gap: 20px;
+    }
+
+    .visual-area {
+      display: grid;
+      grid-template-columns: minmax(320px, 1.3fr) minmax(300px, 0.9fr);
+      gap: 20px;
+    }
+
+    .cards {
+      display: grid;
+      gap: 20px;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .stat .label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-bottom: 6px;
+    }
+
+    .stat .value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .visual-shell {
+      min-height: 420px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bars {
+      height: 320px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding-bottom: 32px;
+      position: relative;
+    }
+
+    .bar-item {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .bar {
+      width: 100%;
+      min-height: 26px;
+      border-radius: 12px 12px 8px 8px;
+      background: var(--bar);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 6px;
+      color: white;
+      font-weight: 700;
+      font-size: 0.88rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .bar-item .idx {
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    .bar-item.active .bar,
+    .bar-item.compare .bar {
+      background: var(--bar-active);
+      transform: translateY(-4px);
+    }
+
+    .bar-item.mid .bar,
+    .bar-item.key .bar {
+      background: var(--bar-mid);
+      transform: translateY(-4px);
+    }
+
+    .bar-item.sorted .bar,
+    .bar-item.found .bar {
+      background: var(--bar-sorted);
+    }
+
+    .bar-item.target .bar {
+      background: var(--bar-target);
+    }
+
+    .bar-item.dim {
+      opacity: 0.45;
+    }
+
+    .merge-stage {
+      display: grid;
+      gap: 18px;
+    }
+
+    .merge-headline {
+      display: grid;
+      gap: 6px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(167, 139, 250, 0.08));
+    }
+
+    .merge-headline strong {
+      font-size: 1rem;
+      color: #eff6ff;
+    }
+
+    .merge-headline span {
+      color: #cbd5e1;
+      font-size: 0.88rem;
+    }
+
+    .merge-flow {
+      display: grid;
+      gap: 18px;
+    }
+
+    .merge-arrow {
+      text-align: center;
+      color: #7dd3fc;
+      font-size: 1.55rem;
+      line-height: 1;
+      letter-spacing: 0.08em;
+      opacity: 0.92;
+    }
+
+    .merge-split-row,
+    .merge-temp-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .merge-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(15, 23, 42, 0.65);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .merge-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 35%);
+      pointer-events: none;
+    }
+
+    .merge-card.focus {
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.16), 0 14px 28px rgba(14, 165, 233, 0.08);
+    }
+
+    .merge-card.left {
+      border-color: rgba(56, 189, 248, 0.3);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.7));
+    }
+
+    .merge-card.right {
+      border-color: rgba(167, 139, 250, 0.34);
+      background: linear-gradient(180deg, rgba(167, 139, 250, 0.14), rgba(15, 23, 42, 0.7));
+    }
+
+    .merge-card.base {
+      border-color: rgba(74, 222, 128, 0.42);
+      background: linear-gradient(180deg, rgba(34, 197, 94, 0.16), rgba(15, 23, 42, 0.7));
+    }
+
+    .merge-card.merge {
+      border-color: rgba(245, 158, 11, 0.42);
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.18), rgba(15, 23, 42, 0.7));
+    }
+
+    .merge-card.result {
+      border-color: rgba(74, 222, 128, 0.42);
+      background: linear-gradient(180deg, rgba(74, 222, 128, 0.18), rgba(15, 23, 42, 0.7));
+    }
+
+    .merge-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .merge-card-title {
+      font-weight: 700;
+      color: #eff6ff;
+    }
+
+    .merge-card-subtitle {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .merge-card-tag {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #e2e8f0;
+    }
+
+    .merge-cells,
+    .binary-cells {
+      display: grid;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .merge-cells {
+      grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr));
+    }
+
+    .merge-cell,
+    .binary-cell {
+      min-height: 56px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(30, 41, 59, 0.78);
+      display: grid;
+      place-items: center;
+      padding: 10px 8px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s ease, opacity 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .merge-cell::before,
+    .binary-cell::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent);
+      pointer-events: none;
+    }
+
+    .merge-cell-index,
+    .binary-cell-index {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      letter-spacing: 0.03em;
+    }
+
+    .merge-cell-value,
+    .binary-cell-value {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+
+    .merge-cell.emphasis {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.22), rgba(30, 41, 59, 0.84));
+      transform: translateY(-2px);
+    }
+
+    .merge-cell.base {
+      border-color: rgba(74, 222, 128, 0.52);
+      background: linear-gradient(180deg, rgba(74, 222, 128, 0.2), rgba(30, 41, 59, 0.84));
+    }
+
+    .merge-cell.merge {
+      border-color: rgba(245, 158, 11, 0.52);
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.22), rgba(30, 41, 59, 0.84));
+    }
+
+    .merge-cell.result {
+      border-color: rgba(74, 222, 128, 0.52);
+      background: linear-gradient(180deg, rgba(34, 197, 94, 0.24), rgba(30, 41, 59, 0.84));
+    }
+
+    .merge-step-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .merge-step-pill {
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      font-size: 0.82rem;
+      color: #cbd5e1;
+    }
+
+    .merge-step-pill.active {
+      border-color: rgba(56, 189, 248, 0.36);
+      background: rgba(56, 189, 248, 0.14);
+      color: #eff6ff;
+    }
+
+    .binary-stage {
+      display: grid;
+      gap: 16px;
+    }
+
+    .binary-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .binary-summary-card {
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(15, 23, 42, 0.72);
+      padding: 12px;
+    }
+
+    .binary-summary-card span {
+      display: block;
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .binary-summary-card strong {
+      font-size: 1.05rem;
+      color: #f8fafc;
+    }
+
+    .binary-track {
+      display: grid;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(15, 23, 42, 0.72));
+      overflow-x: auto;
+    }
+
+    .binary-arrows {
+      display: grid;
+      grid-template-columns: repeat(var(--cols, 1), minmax(74px, 1fr));
+      gap: 10px;
+      min-width: max-content;
+      align-items: end;
+    }
+
+    .binary-arrow-slot {
+      min-height: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .binary-arrow {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #f8fafc;
+      white-space: nowrap;
+    }
+
+    .binary-arrow.low {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.38);
+      color: #bae6fd;
+    }
+
+    .binary-arrow.mid {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: rgba(245, 158, 11, 0.38);
+      color: #fde68a;
+    }
+
+    .binary-arrow.high {
+      background: rgba(167, 139, 250, 0.18);
+      border-color: rgba(167, 139, 250, 0.38);
+      color: #ddd6fe;
+    }
+
+    .binary-arrow.found {
+      background: rgba(34, 197, 94, 0.18);
+      border-color: rgba(74, 222, 128, 0.42);
+      color: #bbf7d0;
+    }
+
+    .binary-arrow::after {
+      content: '↓';
+      display: block;
+      text-align: center;
+      font-size: 1rem;
+      line-height: 0.9;
+      margin-top: 2px;
+    }
+
+    .binary-cells {
+      grid-template-columns: repeat(var(--cols, 1), minmax(74px, 1fr));
+      min-width: max-content;
+    }
+
+    .binary-cell {
+      min-height: 88px;
+      padding-top: 22px;
+    }
+
+    .binary-cell.in-range {
+      border-color: rgba(56, 189, 248, 0.22);
+      box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.05);
+    }
+
+    .binary-cell.discarded {
+      opacity: 0.28;
+      transform: scale(0.96);
+      filter: saturate(0.55);
+    }
+
+    .binary-cell.low-focus {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.22), rgba(30, 41, 59, 0.84));
+    }
+
+    .binary-cell.mid-focus {
+      border-color: rgba(245, 158, 11, 0.52);
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.24), rgba(30, 41, 59, 0.84));
+      transform: translateY(-3px);
+      box-shadow: 0 12px 22px rgba(245, 158, 11, 0.12);
+    }
+
+    .binary-cell.high-focus {
+      border-color: rgba(167, 139, 250, 0.5);
+      background: linear-gradient(180deg, rgba(167, 139, 250, 0.24), rgba(30, 41, 59, 0.84));
+    }
+
+    .binary-cell.found {
+      border-color: rgba(74, 222, 128, 0.52);
+      background: linear-gradient(180deg, rgba(34, 197, 94, 0.26), rgba(30, 41, 59, 0.84));
+      box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.18), 0 14px 28px rgba(34, 197, 94, 0.12);
+    }
+
+    .binary-cell.target-cell {
+      outline: 1px dashed rgba(244, 114, 182, 0.45);
+      outline-offset: -5px;
+    }
+
+    .binary-cell.note-right,
+    .binary-cell.note-left {
+      position: relative;
+    }
+
+    .binary-cell.note-right::after,
+    .binary-cell.note-left::after {
+      position: absolute;
+      bottom: 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+      opacity: 0.95;
+    }
+
+    .binary-cell.note-right::after {
+      content: 'go right';
+      right: 8px;
+      color: #7dd3fc;
+    }
+
+    .binary-cell.note-left::after {
+      content: 'go left';
+      left: 8px;
+      color: #ddd6fe;
+    }
+
+    .binary-decision {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(15, 23, 42, 0.74);
+      color: #e2e8f0;
+      line-height: 1.55;
+    }
+
+    .binary-decision strong {
+      color: #f8fafc;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .badge {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: #dbeafe;
+      font-size: 0.8rem;
+    }
+
+    .message {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 14px;
+      background: rgba(56, 189, 248, 0.08);
+      line-height: 1.5;
+      color: #e0f2fe;
+      min-height: 72px;
+    }
+
+    .pseudo {
+      display: grid;
+      gap: 8px;
+    }
+
+    .line {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: rgba(255,255,255,0.02);
+      color: #dbe2ea;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+      white-space: pre-wrap;
+    }
+
+    .line .num {
+      color: #7dd3fc;
+      font-weight: 700;
+    }
+
+    .line.active {
+      border-color: rgba(56, 189, 248, 0.35);
+      background: rgba(56, 189, 248, 0.12);
+      transform: translateX(3px);
+    }
+
+    .vars {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .var-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .var-card .var-name {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .var-card .var-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 1rem;
+      word-break: break-word;
+    }
+
+    .progress-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1180px) {
+      .grid,
+      .visual-area {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app { padding: 16px; }
+      .control-grid,
+      .control-grid-3,
+      .stat-row,
+      .vars,
+      .stepper,
+      .binary-summary,
+      .merge-split-row,
+      .merge-temp-row { grid-template-columns: 1fr; }
+      .bars { gap: 5px; }
+      .bar { font-size: 0.74rem; }
+      .visual-shell { min-height: 380px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Algorithm Pseudocode Visualizer</h1>
+      <p>
+        Explore <strong>Insertion Sort</strong>, <strong>Merge Sort</strong>, and <strong>Binary Search</strong>
+        step by step. The program highlights the exact pseudocode line being executed, shows variable updates,
+        and animates the data structure after every meaningful operation.
+      </p>
+    </section>
+
+    <div class="grid">
+      <aside class="panel">
+        <div class="panel-header">
+          <h2>Setup & Controls</h2>
+        </div>
+        <div class="panel-body controls">
+          <div class="control-group">
+            <label>
+              Algorithm
+              <select id="algorithmSelect">
+                <option value="insertion">Insertion Sort</option>
+                <option value="merge">Merge Sort</option>
+                <option value="binary">Binary Search</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="control-grid">
+            <label>
+              Number of elements
+              <input id="sizeInput" type="number" min="3" max="14" value="8" />
+            </label>
+            <label>
+              Binary search target
+              <input id="targetInput" type="number" value="23" />
+            </label>
+          </div>
+
+          <div class="control-group">
+            <label>
+              Array values (comma separated)
+              <textarea id="arrayInput">34, 8, 64, 51, 32, 21, 13, 5</textarea>
+            </label>
+            <div class="hint">
+              Example: <code>34, 8, 64, 51, 32, 21, 13, 5</code>. Binary search will automatically use a sorted copy.
+            </div>
+          </div>
+
+          <div class="control-grid-3">
+            <button class="secondary" id="demoBtn">Load demo</button>
+            <button class="secondary" id="randomBtn">Randomize</button>
+            <button class="primary" id="buildBtn">Build steps</button>
+          </div>
+
+          <div class="control-group">
+            <label>
+              Playback speed: <span id="speedLabel">700 ms</span>
+              <input id="speedInput" type="range" min="150" max="1500" step="50" value="700" />
+            </label>
+          </div>
+
+          <div class="stepper">
+            <button id="prevBtn">◀ Prev</button>
+            <button id="playBtn" class="primary">▶ Play</button>
+            <button id="nextBtn">Next ▶</button>
+            <button id="resetBtn">Reset</button>
+          </div>
+
+          <div class="status-note" id="statusNote"></div>
+        </div>
+      </aside>
+
+      <main class="right-col">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Execution View</h2>
+          </div>
+          <div class="panel-body visual-area">
+            <div>
+              <div class="stat-row">
+                <div class="stat">
+                  <span class="label">Current algorithm</span>
+                  <span class="value" id="algoName">Insertion Sort</span>
+                </div>
+                <div class="stat">
+                  <span class="label">Current step</span>
+                  <span class="value" id="stepLabel">1 / 1</span>
+                </div>
+                <div class="stat">
+                  <span class="label">Current line</span>
+                  <span class="value" id="lineLabel">-</span>
+                </div>
+              </div>
+
+              <div class="visual-shell">
+                <div id="visualCanvas"></div>
+                <div class="badge-row" id="legend"></div>
+              </div>
+
+              <div class="message" id="messageBox"></div>
+            </div>
+
+            <div class="cards">
+              <section class="panel" style="margin: 0;">
+                <div class="panel-header">
+                  <h3>Pseudocode</h3>
+                </div>
+                <div class="panel-body">
+                  <div class="pseudo" id="pseudocode"></div>
+                </div>
+              </section>
+
+              <section class="panel" style="margin: 0;">
+                <div class="panel-header">
+                  <h3>Variables</h3>
+                </div>
+                <div class="panel-body">
+                  <div class="vars" id="variables"></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Timeline</h2>
+          </div>
+          <div class="panel-body">
+            <div class="progress-row">
+              <span id="timelineStart">Step 1</span>
+              <input id="timeline" type="range" min="0" max="0" value="0" />
+              <span id="timelineEnd">Step 1</span>
+            </div>
+            <div class="footer-note">
+              Tip: drag the timeline slider for manual inspection, or press play to auto-run the visualization.
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const PSEUDOCODE = {
+      insertion: {
+        name: 'Insertion Sort',
+        lines: [
+          { n: 1, text: 'for j ← 2 to n do' },
+          { n: 2, text: '    key ← A[j]' },
+          { n: 3, text: '    i ← j - 1' },
+          { n: 4, text: '    while i > 0 and A[i] > key' },
+          { n: 5, text: '        A[i + 1] ← A[i]' },
+          { n: 6, text: '        i ← i - 1' },
+          { n: 7, text: '    A[i + 1] ← key' }
+        ]
+      },
+      merge: {
+        name: 'Merge Sort',
+        lines: [
+          { n: 1, text: 'MERGE-SORT(A, p, r)' },
+          { n: 2, text: '    if p < r' },
+          { n: 3, text: '        q ← floor((p + r) / 2)' },
+          { n: 4, text: '        MERGE-SORT(A, p, q)' },
+          { n: 5, text: '        MERGE-SORT(A, q + 1, r)' },
+          { n: 6, text: '        MERGE(A, p, q, r)' },
+          { n: 7, text: 'MERGE(A, p, q, r)' },
+          { n: 8, text: '    L ← A[p..q],  R ← A[q+1..r]' },
+          { n: 9, text: '    i ← 1,  j ← 1,  k ← p' },
+          { n: 10, text: '    while i ≤ |L| and j ≤ |R|' },
+          { n: 11, text: '        if L[i] ≤ R[j]' },
+          { n: 12, text: '            A[k] ← L[i]; i ← i + 1' },
+          { n: 13, text: '        else A[k] ← R[j]; j ← j + 1' },
+          { n: 14, text: '        k ← k + 1' },
+          { n: 15, text: '    copy any remaining values from L' },
+          { n: 16, text: '    copy any remaining values from R' }
+        ]
+      },
+      binary: {
+        name: 'Binary Search',
+        lines: [
+          { n: 1, text: 'low ← 1' },
+          { n: 2, text: 'high ← n' },
+          { n: 3, text: 'while low ≤ high' },
+          { n: 4, text: '    mid ← floor((low + high) / 2)' },
+          { n: 5, text: '    if A[mid] = target' },
+          { n: 6, text: '        return mid' },
+          { n: 7, text: '    else if A[mid] < target' },
+          { n: 8, text: '        low ← mid + 1' },
+          { n: 9, text: '    else' },
+          { n: 10, text: '        high ← mid - 1' },
+          { n: 11, text: 'return NOT FOUND' }
+        ]
+      }
+    };
+
+    const DEMOS = {
+      insertion: { arr: [34, 8, 64, 51, 32, 21, 13, 5], target: 21 },
+      merge: { arr: [38, 27, 43, 3, 9, 82, 10, 15], target: 10 },
+      binary: { arr: [3, 7, 11, 18, 23, 29, 31, 42, 56], target: 23 }
+    };
+
+    const state = {
+      algorithm: 'insertion',
+      steps: [],
+      index: 0,
+      timer: null,
+      speed: 700,
+      playing: false,
+      currentArray: [],
+      target: 23
+    };
+
+    const algorithmSelect = document.getElementById('algorithmSelect');
+    const sizeInput = document.getElementById('sizeInput');
+    const targetInput = document.getElementById('targetInput');
+    const arrayInput = document.getElementById('arrayInput');
+    const speedInput = document.getElementById('speedInput');
+    const speedLabel = document.getElementById('speedLabel');
+    const demoBtn = document.getElementById('demoBtn');
+    const randomBtn = document.getElementById('randomBtn');
+    const buildBtn = document.getElementById('buildBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const playBtn = document.getElementById('playBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusNote = document.getElementById('statusNote');
+    const algoName = document.getElementById('algoName');
+    const stepLabel = document.getElementById('stepLabel');
+    const lineLabel = document.getElementById('lineLabel');
+    const visualCanvas = document.getElementById('visualCanvas');
+    const legendEl = document.getElementById('legend');
+    const messageBox = document.getElementById('messageBox');
+    const pseudocodeEl = document.getElementById('pseudocode');
+    const variablesEl = document.getElementById('variables');
+    const timeline = document.getElementById('timeline');
+    const timelineStart = document.getElementById('timelineStart');
+    const timelineEnd = document.getElementById('timelineEnd');
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function parseArrayInput() {
+      const raw = arrayInput.value
+        .split(',')
+        .map(v => v.trim())
+        .filter(Boolean)
+        .map(v => Number(v));
+
+      if (!raw.length || raw.some(Number.isNaN)) {
+        throw new Error('Please enter a valid comma-separated list of numbers.');
+      }
+
+      return raw.slice(0, 14);
+    }
+
+    function randomArray(length) {
+      const len = clamp(Number(length) || 8, 3, 14);
+      const arr = [];
+      for (let i = 0; i < len; i += 1) {
+        arr.push(Math.floor(Math.random() * 90) + 5);
+      }
+      return arr;
+    }
+
+    function setArrayInput(arr) {
+      arrayInput.value = arr.join(', ');
+      sizeInput.value = arr.length;
+    }
+
+    function stopPlayback() {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      state.playing = false;
+      playBtn.textContent = '▶ Play';
+    }
+
+    function startPlayback() {
+      if (!state.steps.length) return;
+      stopPlayback();
+      state.playing = true;
+      playBtn.textContent = '⏸ Pause';
+      state.timer = setInterval(() => {
+        if (state.index >= state.steps.length - 1) {
+          stopPlayback();
+          return;
+        }
+        state.index += 1;
+        render();
+      }, state.speed);
+    }
+
+    function updateSpeed() {
+      state.speed = Number(speedInput.value);
+      speedLabel.textContent = `${state.speed} ms`;
+      if (state.playing) {
+        startPlayback();
+      }
+    }
+
+    function snapshotArray(arr) {
+      return arr.slice();
+    }
+
+    function formatRange(range) {
+      if (!range) return '—';
+      return `${range[0] + 1}..${range[1] + 1}`;
+    }
+
+    function pushStep(steps, payload) {
+      steps.push({
+        array: [],
+        line: null,
+        message: '',
+        vars: {},
+        activeIndices: [],
+        compareIndices: [],
+        sortedIndices: [],
+        foundIndex: null,
+        keyIndex: null,
+        targetValue: null,
+        range: null,
+        dimOutsideRange: false,
+        aux: null,
+        mergeState: null,
+        binaryState: null,
+        ...payload
+      });
+    }
+
+    function buildInsertionSteps(input) {
+      const arr = snapshotArray(input);
+      const steps = [];
+
+      pushStep(steps, {
+        line: 1,
+        array: snapshotArray(arr),
+        message: 'Start insertion sort. The first element is treated as already sorted.',
+        vars: { n: arr.length },
+        sortedIndices: [0]
+      });
+
+      for (let j = 1; j < arr.length; j += 1) {
+        const key = arr[j];
+        let i = j - 1;
+
+        pushStep(steps, {
+          line: 1,
+          array: snapshotArray(arr),
+          message: `Outer loop: j = ${j + 1}. We will insert A[${j + 1}] into the sorted prefix A[1..${j}].`,
+          vars: { j: j + 1, sortedPrefix: `1..${j}` },
+          activeIndices: [j],
+          sortedIndices: Array.from({ length: j }, (_, idx) => idx)
+        });
+
+        pushStep(steps, {
+          line: 2,
+          array: snapshotArray(arr),
+          message: `key ← A[${j + 1}] = ${key}`,
+          vars: { j: j + 1, key },
+          keyIndex: j,
+          activeIndices: [j],
+          sortedIndices: Array.from({ length: j }, (_, idx) => idx)
+        });
+
+        pushStep(steps, {
+          line: 3,
+          array: snapshotArray(arr),
+          message: `Initialize i ← j - 1 = ${i + 1}. Compare from right to left inside the sorted prefix.`,
+          vars: { j: j + 1, key, i: i + 1 },
+          keyIndex: j,
+          activeIndices: [j, i],
+          sortedIndices: Array.from({ length: j }, (_, idx) => idx)
+        });
+
+        while (i >= 0) {
+          const condition = arr[i] > key;
+          pushStep(steps, {
+            line: 4,
+            array: snapshotArray(arr),
+            message: `Check while condition: i > 0 and A[i] > key → A[${i + 1}] = ${arr[i]} ${condition ? '>' : '≤'} ${key}.`,
+            vars: { j: j + 1, key, i: i + 1, condition },
+            keyIndex: j,
+            activeIndices: [j],
+            compareIndices: [i],
+            sortedIndices: Array.from({ length: j }, (_, idx) => idx)
+          });
+
+          if (!condition) break;
+
+          arr[i + 1] = arr[i];
+          pushStep(steps, {
+            line: 5,
+            array: snapshotArray(arr),
+            message: `Shift A[${i + 1}] to the right: A[${i + 2}] ← A[${i + 1}] = ${arr[i + 1]}.`,
+            vars: { j: j + 1, key, i: i + 1, shiftedTo: i + 2 },
+            activeIndices: [i, i + 1],
+            compareIndices: [i],
+            sortedIndices: Array.from({ length: j }, (_, idx) => idx)
+          });
+
+          i -= 1;
+          pushStep(steps, {
+            line: 6,
+            array: snapshotArray(arr),
+            message: `Move left: i ← i - 1, so i is now ${i + 1 <= 0 ? 0 : i + 1} in 1-based indexing.`,
+            vars: { j: j + 1, key, i: i + 1 },
+            activeIndices: i >= 0 ? [i] : [],
+            sortedIndices: Array.from({ length: j }, (_, idx) => idx)
+          });
+        }
+
+        arr[i + 1] = key;
+        pushStep(steps, {
+          line: 7,
+          array: snapshotArray(arr),
+          message: `Insert key into its correct position: A[${i + 2}] ← ${key}.`,
+          vars: { j: j + 1, key, insertPosition: i + 2 },
+          keyIndex: i + 1,
+          activeIndices: [i + 1],
+          sortedIndices: Array.from({ length: j + 1 }, (_, idx) => idx)
+        });
+      }
+
+      pushStep(steps, {
+        line: null,
+        array: snapshotArray(arr),
+        message: 'Insertion sort is complete. The whole array is now sorted.',
+        vars: { result: `[${arr.join(', ')}]` },
+        sortedIndices: Array.from({ length: arr.length }, (_, idx) => idx)
+      });
+
+      return steps;
+    }
+
+    function buildMergeVisual(arr, l, q, r, stage, extra = {}) {
+      const focusValues = arr.slice(l, r + 1);
+      const leftValues = q !== null && q !== undefined ? arr.slice(l, q + 1) : [];
+      const rightValues = q !== null && q !== undefined ? arr.slice(q + 1, r + 1) : [];
+      return {
+        stage,
+        focus: { range: [l, r], values: focusValues },
+        split: q !== null && q !== undefined ? {
+          left: { range: [l, q], values: leftValues },
+          right: { range: [q + 1, r], values: rightValues }
+        } : null,
+        ...extra
+      };
+    }
+
+    function buildMergeSteps(input) {
+      const arr = snapshotArray(input);
+      const steps = [];
+
+      function mergeSort(l, r, depth) {
+        pushStep(steps, {
+          line: 1,
+          array: snapshotArray(arr),
+          message: `Call MERGE-SORT(A, ${l + 1}, ${r + 1}).`,
+          vars: { p: l + 1, r: r + 1, depth },
+          range: [l, r],
+          dimOutsideRange: true,
+          mergeState: buildMergeVisual(arr, l, null, r, 'call', { depth })
+        });
+
+        pushStep(steps, {
+          line: 2,
+          array: snapshotArray(arr),
+          message: `Check base case: p < r is ${l < r}.`,
+          vars: { p: l + 1, r: r + 1, condition: l < r, depth },
+          range: [l, r],
+          dimOutsideRange: true,
+          mergeState: buildMergeVisual(arr, l, null, r, l < r ? 'inspect' : 'base', { depth })
+        });
+
+        if (l >= r) {
+          pushStep(steps, {
+            line: 2,
+            array: snapshotArray(arr),
+            message: `Subarray A[${l + 1}..${r + 1}] has one element, so it is already sorted.`,
+            vars: { p: l + 1, r: r + 1, depth },
+            range: [l, r],
+            dimOutsideRange: true,
+            sortedIndices: [l],
+            mergeState: buildMergeVisual(arr, l, null, r, 'base', { depth, conquered: [l] })
+          });
+          return;
+        }
+
+        const q = Math.floor((l + r) / 2);
+        pushStep(steps, {
+          line: 3,
+          array: snapshotArray(arr),
+          message: `Compute midpoint: q = floor((${l + 1} + ${r + 1}) / 2) = ${q + 1}.`,
+          vars: { p: l + 1, q: q + 1, r: r + 1, depth },
+          range: [l, r],
+          activeIndices: [q],
+          dimOutsideRange: true,
+          mergeState: buildMergeVisual(arr, l, q, r, 'split-ready', { depth, q })
+        });
+
+        pushStep(steps, {
+          line: 4,
+          array: snapshotArray(arr),
+          message: `Separate the large rectangle into left half A[${l + 1}..${q + 1}] and right half A[${q + 2}..${r + 1}]. Now recurse on the left side.`,
+          vars: { p: l + 1, q: q + 1, r: r + 1, depth },
+          range: [l, q],
+          dimOutsideRange: true,
+          mergeState: buildMergeVisual(arr, l, q, r, 'split-left', { depth, q, focusChild: 'left' })
+        });
+        mergeSort(l, q, depth + 1);
+
+        pushStep(steps, {
+          line: 5,
+          array: snapshotArray(arr),
+          message: `Left side is conquered. Recurse on the right half A[${q + 2}..${r + 1}].`,
+          vars: { p: l + 1, q: q + 1, r: r + 1, depth },
+          range: [q + 1, r],
+          dimOutsideRange: true,
+          mergeState: buildMergeVisual(arr, l, q, r, 'split-right', { depth, q, focusChild: 'right' })
+        });
+        mergeSort(q + 1, r, depth + 1);
+
+        pushStep(steps, {
+          line: 6,
+          array: snapshotArray(arr),
+          message: `Both halves are conquered. Combine them by calling MERGE(A, ${l + 1}, ${q + 1}, ${r + 1}).`,
+          vars: { p: l + 1, q: q + 1, r: r + 1, depth },
+          range: [l, r],
+          dimOutsideRange: true,
+          mergeState: buildMergeVisual(arr, l, q, r, 'merge-start', { depth, q })
+        });
+        merge(l, q, r, depth);
+      }
+
+      function merge(l, q, r, depth) {
+        const L = arr.slice(l, q + 1);
+        const R = arr.slice(q + 1, r + 1);
+        let i = 0;
+        let j = 0;
+        let k = l;
+
+        pushStep(steps, {
+          line: 7,
+          array: snapshotArray(arr),
+          message: `Enter MERGE(A, ${l + 1}, ${q + 1}, ${r + 1}).`,
+          vars: { p: l + 1, q: q + 1, r: r + 1, depth },
+          range: [l, r],
+          dimOutsideRange: true,
+          aux: { L, R },
+          mergeState: buildMergeVisual(arr, l, q, r, 'merge-enter', { depth, q, L, R })
+        });
+
+        pushStep(steps, {
+          line: 8,
+          array: snapshotArray(arr),
+          message: `Create temporary arrays L = [${L.join(', ')}] and R = [${R.join(', ')}].`,
+          vars: { leftSize: L.length, rightSize: R.length, p: l + 1, q: q + 1, r: r + 1 },
+          range: [l, r],
+          dimOutsideRange: true,
+          aux: { L, R },
+          mergeState: buildMergeVisual(arr, l, q, r, 'temp-arrays', { depth, q, L, R })
+        });
+
+        pushStep(steps, {
+          line: 9,
+          array: snapshotArray(arr),
+          message: `Initialize i = 1, j = 1, k = ${k + 1}.`,
+          vars: { i: i + 1, j: j + 1, k: k + 1, p: l + 1, q: q + 1, r: r + 1 },
+          range: [l, r],
+          dimOutsideRange: true,
+          aux: { L, R },
+          mergeState: buildMergeVisual(arr, l, q, r, 'merge-pointer', { depth, q, L, R, mergeIndex: k })
+        });
+
+        while (i < L.length && j < R.length) {
+          pushStep(steps, {
+            line: 10,
+            array: snapshotArray(arr),
+            message: `Compare L[${i + 1}] = ${L[i]} and R[${j + 1}] = ${R[j]}.`,
+            vars: { i: i + 1, j: j + 1, k: k + 1, p: l + 1, q: q + 1, r: r + 1 },
+            range: [l, r],
+            activeIndices: [k],
+            dimOutsideRange: true,
+            aux: { L, R },
+            mergeState: buildMergeVisual(arr, l, q, r, 'compare', {
+              depth,
+              q,
+              L,
+              R,
+              compareLeft: i,
+              compareRight: j,
+              mergeIndex: k,
+              resultPreview: arr.slice(l, k)
+            })
+          });
+
+          if (L[i] <= R[j]) {
+            pushStep(steps, {
+              line: 11,
+              array: snapshotArray(arr),
+              message: `${L[i]} ≤ ${R[j]}, so take the next value from L.`,
+              vars: { i: i + 1, j: j + 1, k: k + 1 },
+              range: [l, r],
+              dimOutsideRange: true,
+              aux: { L, R },
+              mergeState: buildMergeVisual(arr, l, q, r, 'choose-left', {
+                depth,
+                q,
+                L,
+                R,
+                compareLeft: i,
+                compareRight: j,
+                mergeIndex: k,
+                resultPreview: arr.slice(l, k)
+              })
+            });
+
+            arr[k] = L[i];
+            pushStep(steps, {
+              line: 12,
+              array: snapshotArray(arr),
+              message: `Write A[${k + 1}] ← ${L[i]} and increment i.`,
+              vars: { i: i + 2, j: j + 1, k: k + 1 },
+              range: [l, r],
+              activeIndices: [k],
+              dimOutsideRange: true,
+              aux: { L, R },
+              mergeState: buildMergeVisual(arr, l, q, r, 'write-left', {
+                depth,
+                q,
+                L,
+                R,
+                mergeIndex: k,
+                resultPreview: arr.slice(l, k + 1)
+              })
+            });
+            i += 1;
+          } else {
+            pushStep(steps, {
+              line: 11,
+              array: snapshotArray(arr),
+              message: `${L[i]} > ${R[j]}, so take the next value from R.`,
+              vars: { i: i + 1, j: j + 1, k: k + 1 },
+              range: [l, r],
+              dimOutsideRange: true,
+              aux: { L, R },
+              mergeState: buildMergeVisual(arr, l, q, r, 'choose-right', {
+                depth,
+                q,
+                L,
+                R,
+                compareLeft: i,
+                compareRight: j,
+                mergeIndex: k,
+                resultPreview: arr.slice(l, k)
+              })
+            });
+
+            arr[k] = R[j];
+            pushStep(steps, {
+              line: 13,
+              array: snapshotArray(arr),
+              message: `Write A[${k + 1}] ← ${R[j]} and increment j.`,
+              vars: { i: i + 1, j: j + 2, k: k + 1 },
+              range: [l, r],
+              activeIndices: [k],
+              dimOutsideRange: true,
+              aux: { L, R },
+              mergeState: buildMergeVisual(arr, l, q, r, 'write-right', {
+                depth,
+                q,
+                L,
+                R,
+                mergeIndex: k,
+                resultPreview: arr.slice(l, k + 1)
+              })
+            });
+            j += 1;
+          }
+
+          k += 1;
+          pushStep(steps, {
+            line: 14,
+            array: snapshotArray(arr),
+            message: `Advance k to ${k + 1}.`,
+            vars: { i: i + 1, j: j + 1, k: k + 1 },
+            range: [l, r],
+            dimOutsideRange: true,
+            aux: { L, R },
+            mergeState: buildMergeVisual(arr, l, q, r, 'advance-k', {
+              depth,
+              q,
+              L,
+              R,
+              mergeIndex: k,
+              resultPreview: arr.slice(l, k)
+            })
+          });
+        }
+
+        while (i < L.length) {
+          arr[k] = L[i];
+          pushStep(steps, {
+            line: 15,
+            array: snapshotArray(arr),
+            message: `Right side is exhausted, so copy remaining L[${i + 1}] = ${L[i]} into A[${k + 1}].`,
+            vars: { i: i + 1, j: j + 1, k: k + 1 },
+            range: [l, r],
+            activeIndices: [k],
+            dimOutsideRange: true,
+            aux: { L, R },
+            mergeState: buildMergeVisual(arr, l, q, r, 'copy-left', {
+              depth,
+              q,
+              L,
+              R,
+              mergeIndex: k,
+              resultPreview: arr.slice(l, k + 1)
+            })
+          });
+          i += 1;
+          k += 1;
+        }
+
+        while (j < R.length) {
+          arr[k] = R[j];
+          pushStep(steps, {
+            line: 16,
+            array: snapshotArray(arr),
+            message: `Left side is exhausted, so copy remaining R[${j + 1}] = ${R[j]} into A[${k + 1}].`,
+            vars: { i: i + 1, j: j + 1, k: k + 1 },
+            range: [l, r],
+            activeIndices: [k],
+            dimOutsideRange: true,
+            aux: { L, R },
+            mergeState: buildMergeVisual(arr, l, q, r, 'copy-right', {
+              depth,
+              q,
+              L,
+              R,
+              mergeIndex: k,
+              resultPreview: arr.slice(l, k + 1)
+            })
+          });
+          j += 1;
+          k += 1;
+        }
+
+        pushStep(steps, {
+          line: 6,
+          array: snapshotArray(arr),
+          message: `Merge complete for A[${l + 1}..${r + 1}] → [${arr.slice(l, r + 1).join(', ')}].`,
+          vars: { p: l + 1, q: q + 1, r: r + 1, merged: `[${arr.slice(l, r + 1).join(', ')}]` },
+          range: [l, r],
+          dimOutsideRange: true,
+          sortedIndices: Array.from({ length: r - l + 1 }, (_, idx) => l + idx),
+          aux: { L, R },
+          mergeState: buildMergeVisual(arr, l, q, r, 'merged', {
+            depth,
+            q,
+            L,
+            R,
+            resultValues: arr.slice(l, r + 1)
+          })
+        });
+      }
+
+      mergeSort(0, arr.length - 1, 0);
+      pushStep(steps, {
+        line: null,
+        array: snapshotArray(arr),
+        message: 'Merge sort is complete. The array is fully sorted.',
+        vars: { result: `[${arr.join(', ')}]` },
+        sortedIndices: Array.from({ length: arr.length }, (_, idx) => idx),
+        mergeState: buildMergeVisual(arr, 0, Math.floor((arr.length - 1) / 2), arr.length - 1, 'done', {
+          resultValues: arr.slice(),
+          q: Math.floor((arr.length - 1) / 2)
+        })
+      });
+      return steps;
+    }
+
+    function buildBinarySteps(input, target) {
+      const arr = snapshotArray(input).sort((a, b) => a - b);
+      const steps = [];
+      let low = 0;
+      let high = arr.length - 1;
+
+      pushStep(steps, {
+        line: 1,
+        array: snapshotArray(arr),
+        message: 'Binary search begins on a sorted array. Initialize low to the first index.',
+        vars: { low: low + 1, target },
+        range: [low, high],
+        dimOutsideRange: true,
+        targetValue: target,
+        binaryState: {
+          low,
+          high,
+          mid: null,
+          target,
+          decision: 'Start with the full rectangle of sorted elements.',
+          activeRange: [low, high],
+          discardLeft: null,
+          discardRight: null,
+          found: false
+        }
+      });
+
+      pushStep(steps, {
+        line: 2,
+        array: snapshotArray(arr),
+        message: `Set high to n = ${high + 1}.`,
+        vars: { low: low + 1, high: high + 1, target },
+        range: [low, high],
+        dimOutsideRange: true,
+        targetValue: target,
+        binaryState: {
+          low,
+          high,
+          mid: null,
+          target,
+          decision: 'low points to the first cell and high points to the last cell.',
+          activeRange: [low, high],
+          discardLeft: null,
+          discardRight: null,
+          found: false
+        }
+      });
+
+      while (low <= high) {
+        pushStep(steps, {
+          line: 3,
+          array: snapshotArray(arr),
+          message: `Check while low ≤ high → ${low + 1} ≤ ${high + 1} is true. Search space is A[${low + 1}..${high + 1}].`,
+          vars: { low: low + 1, high: high + 1, target },
+          range: [low, high],
+          dimOutsideRange: true,
+          targetValue: target,
+          binaryState: {
+            low,
+            high,
+            mid: null,
+            target,
+            decision: `Only the highlighted window A[${low + 1}..${high + 1}] is still under consideration.`,
+            activeRange: [low, high],
+            discardLeft: low > 0 ? [0, low - 1] : null,
+            discardRight: high < arr.length - 1 ? [high + 1, arr.length - 1] : null,
+            found: false
+          }
+        });
+
+        const mid = Math.floor((low + high) / 2);
+        pushStep(steps, {
+          line: 4,
+          array: snapshotArray(arr),
+          message: `Compute mid = floor((${low + 1} + ${high + 1}) / 2) = ${mid + 1}.`,
+          vars: { low: low + 1, high: high + 1, mid: mid + 1, target },
+          range: [low, high],
+          activeIndices: [mid],
+          dimOutsideRange: true,
+          targetValue: target,
+          binaryState: {
+            low,
+            high,
+            mid,
+            target,
+            decision: 'The middle cell is the only one compared directly with the target.',
+            activeRange: [low, high],
+            discardLeft: low > 0 ? [0, low - 1] : null,
+            discardRight: high < arr.length - 1 ? [high + 1, arr.length - 1] : null,
+            found: false
+          }
+        });
+
+        pushStep(steps, {
+          line: 5,
+          array: snapshotArray(arr),
+          message: `Compare A[${mid + 1}] = ${arr[mid]} with target ${target}.`,
+          vars: { low: low + 1, high: high + 1, mid: mid + 1, valueAtMid: arr[mid], target },
+          range: [low, high],
+          activeIndices: [mid],
+          compareIndices: [mid],
+          dimOutsideRange: true,
+          targetValue: target,
+          binaryState: {
+            low,
+            high,
+            mid,
+            target,
+            decision: `Middle value ${arr[mid]} is compared with target ${target}.`,
+            activeRange: [low, high],
+            discardLeft: low > 0 ? [0, low - 1] : null,
+            discardRight: high < arr.length - 1 ? [high + 1, arr.length - 1] : null,
+            found: false
+          }
+        });
+
+        if (arr[mid] === target) {
+          pushStep(steps, {
+            line: 6,
+            array: snapshotArray(arr),
+            message: `Target found at position ${mid + 1}.`,
+            vars: { low: low + 1, high: high + 1, mid: mid + 1, result: mid + 1, target },
+            range: [low, high],
+            foundIndex: mid,
+            activeIndices: [mid],
+            dimOutsideRange: true,
+            targetValue: target,
+            binaryState: {
+              low,
+              high,
+              mid,
+              target,
+              decision: `Success: A[${mid + 1}] equals the target, so the algorithm stops here.`,
+              activeRange: [low, high],
+              discardLeft: low > 0 ? [0, low - 1] : null,
+              discardRight: high < arr.length - 1 ? [high + 1, arr.length - 1] : null,
+              found: true
+            }
+          });
+          return steps;
+        }
+
+        if (arr[mid] < target) {
+          pushStep(steps, {
+            line: 7,
+            array: snapshotArray(arr),
+            message: `${arr[mid]} < ${target}, so ignore the left half including mid and continue in the right half.`,
+            vars: { low: low + 1, high: high + 1, mid: mid + 1, target },
+            range: [low, high],
+            activeIndices: [mid],
+            dimOutsideRange: true,
+            targetValue: target,
+            binaryState: {
+              low,
+              high,
+              mid,
+              target,
+              decision: `Because ${arr[mid]} is smaller than ${target}, every cell from ${low + 1} to ${mid + 1} is discarded.`,
+              activeRange: [low, high],
+              discardLeft: [low, mid],
+              discardRight: high < arr.length - 1 ? [high + 1, arr.length - 1] : null,
+              direction: 'right',
+              found: false
+            }
+          });
+
+          low = mid + 1;
+          pushStep(steps, {
+            line: 8,
+            array: snapshotArray(arr),
+            message: `Update low ← mid + 1 = ${low + 1}.`,
+            vars: { low: low + 1, high: high + 1, target },
+            range: low <= high ? [low, high] : null,
+            dimOutsideRange: true,
+            targetValue: target,
+            binaryState: {
+              low,
+              high,
+              mid,
+              target,
+              decision: `low moves right to ${low + 1}, shrinking the active window to A[${low + 1}..${high + 1}].`,
+              activeRange: low <= high ? [low, high] : null,
+              discardLeft: low > 0 ? [0, low - 1] : null,
+              discardRight: high < arr.length - 1 ? [high + 1, arr.length - 1] : null,
+              direction: 'right',
+              found: false
+            }
+          });
+        } else {
+          pushStep(steps, {
+            line: 9,
+            array: snapshotArray(arr),
+            message: `${arr[mid]} > ${target}, so ignore the right half including mid and continue in the left half.`,
+            vars: { low: low + 1, high: high + 1, mid: mid + 1, target },
+            range: [low, high],
+            activeIndices: [mid],
+            dimOutsideRange: true,
+            targetValue: target,
+            binaryState: {
+              low,
+              high,
+              mid,
+              target,
+              decision: `Because ${arr[mid]} is larger than ${target}, every cell from ${mid + 1} to ${high + 1} is discarded.`,
+              activeRange: [low, high],
+              discardLeft: low > 0 ? [0, low - 1] : null,
+              discardRight: [mid, high],
+              direction: 'left',
+              found: false
+            }
+          });
+
+          high = mid - 1;
+          pushStep(steps, {
+            line: 10,
+            array: snapshotArray(arr),
+            message: `Update high ← mid - 1 = ${high + 1}.`,
+            vars: { low: low + 1, high: high + 1, target },
+            range: low <= high ? [low, high] : null,
+            dimOutsideRange: true,
+            targetValue: target,
+            binaryState: {
+              low,
+              high,
+              mid,
+              target,
+              decision: `high moves left to ${high + 1}, shrinking the active window to A[${low + 1}..${high + 1}].`,
+              activeRange: low <= high ? [low, high] : null,
+              discardLeft: low > 0 ? [0, low - 1] : null,
+              discardRight: high < arr.length - 1 ? [high + 1, arr.length - 1] : null,
+              direction: 'left',
+              found: false
+            }
+          });
+        }
+      }
+
+      pushStep(steps, {
+        line: 3,
+        array: snapshotArray(arr),
+        message: 'Check while low ≤ high → false, so the search stops.',
+        vars: { low: low + 1, high: high + 1, target },
+        range: null,
+        dimOutsideRange: false,
+        targetValue: target,
+        binaryState: {
+          low,
+          high,
+          mid: null,
+          target,
+          decision: 'The active window collapsed, so there are no cells left to inspect.',
+          activeRange: null,
+          discardLeft: low > 0 ? [0, low - 1] : null,
+          discardRight: high < arr.length - 1 ? [high + 1, arr.length - 1] : null,
+          found: false
+        }
+      });
+
+      pushStep(steps, {
+        line: 11,
+        array: snapshotArray(arr),
+        message: `Target ${target} is not in the array.`,
+        vars: { result: 'NOT FOUND', target },
+        range: null,
+        dimOutsideRange: false,
+        targetValue: target,
+        binaryState: {
+          low,
+          high,
+          mid: null,
+          target,
+          decision: 'Result: NOT FOUND. Every possible position was eliminated by the low/high updates.',
+          activeRange: null,
+          discardLeft: [0, arr.length - 1],
+          discardRight: null,
+          found: false
+        }
+      });
+
+      return steps;
+    }
+
+    function legendForStep(step) {
+      if (state.algorithm === 'merge') {
+        return [
+          'Current rectangle',
+          'Split halves',
+          'Base case conquered',
+          'Merging / combining',
+          'Sorted result'
+        ];
+      }
+
+      if (state.algorithm === 'binary') {
+        return [
+          'Active search window',
+          'Discarded half',
+          'Low arrow',
+          'Mid arrow',
+          'High arrow',
+          `Target = ${step.targetValue}`
+        ];
+      }
+
+      const badges = [];
+      badges.push('Default value');
+      if (step.activeIndices?.length) badges.push('Active index');
+      if (step.compareIndices?.length) badges.push('Compared value');
+      if (step.keyIndex !== null) badges.push('Key / midpoint');
+      if (step.sortedIndices?.length) badges.push('Sorted / finished');
+      if (step.foundIndex !== null) badges.push('Found target');
+      if (step.range) badges.push('Current working range');
+      return badges;
+    }
+
+    function renderLegend(step) {
+      legendEl.innerHTML = '';
+      legendForStep(step).forEach(label => {
+        const el = document.createElement('span');
+        el.className = 'badge';
+        el.textContent = label;
+        legendEl.appendChild(el);
+      });
+      if (step.aux && state.algorithm !== 'merge') {
+        ['L', 'R'].forEach(name => {
+          const el = document.createElement('span');
+          el.className = 'badge';
+          el.textContent = `${name} = [${(step.aux[name] || []).join(', ')}]`;
+          legendEl.appendChild(el);
+        });
+      }
+    }
+
+    function renderInsertionBars(step) {
+      visualCanvas.innerHTML = '';
+      const bars = document.createElement('div');
+      bars.className = 'bars';
+      const arr = step.array || [];
+      const max = Math.max(...arr.map(v => Math.abs(v)), 1);
+
+      arr.forEach((value, idx) => {
+        const item = document.createElement('div');
+        item.className = 'bar-item';
+
+        const inRange = !step.range || (idx >= step.range[0] && idx <= step.range[1]);
+        if (step.dimOutsideRange && !inRange) item.classList.add('dim');
+        if (step.activeIndices?.includes(idx)) item.classList.add('active');
+        if (step.compareIndices?.includes(idx)) item.classList.add('compare');
+        if (step.keyIndex === idx) item.classList.add('key');
+        if (step.sortedIndices?.includes(idx)) item.classList.add('sorted');
+        if (step.foundIndex === idx) item.classList.add('found');
+
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${Math.max(28, Math.round((Math.abs(value) / max) * 240) + 30)}px`;
+        bar.textContent = value;
+
+        const idxLabel = document.createElement('div');
+        idxLabel.className = 'idx';
+        idxLabel.textContent = idx + 1;
+
+        item.appendChild(bar);
+        item.appendChild(idxLabel);
+        bars.appendChild(item);
+      });
+
+      visualCanvas.appendChild(bars);
+    }
+
+    function createMergeCard({ title, subtitle, tag, values, range, role, emphasisIndices = [], compareIndices = [], resultIndices = [] }) {
+      const card = document.createElement('div');
+      card.className = `merge-card ${role || ''}`.trim();
+
+      const header = document.createElement('div');
+      header.className = 'merge-card-header';
+      header.innerHTML = `
+        <div>
+          <div class="merge-card-title">${title}</div>
+          <div class="merge-card-subtitle">${subtitle}</div>
+        </div>
+        <div class="merge-card-tag">${tag}</div>
+      `;
+      card.appendChild(header);
+
+      const cells = document.createElement('div');
+      cells.className = 'merge-cells';
+      cells.style.setProperty('--cols', Math.max(values.length, 1));
+
+      values.forEach((value, idx) => {
+        const cell = document.createElement('div');
+        cell.className = 'merge-cell';
+        if (emphasisIndices.includes(idx)) cell.classList.add('emphasis');
+        if (compareIndices.includes(idx)) cell.classList.add('merge');
+        if (resultIndices.includes(idx)) cell.classList.add('result');
+        if (role === 'base') cell.classList.add('base');
+        if (role === 'merge') cell.classList.add('merge');
+        if (role === 'result') cell.classList.add('result');
+        cell.innerHTML = `
+          <span class="merge-cell-index">${range[0] + idx + 1}</span>
+          <span class="merge-cell-value">${value}</span>
+        `;
+        cells.appendChild(cell);
+      });
+
+      card.appendChild(cells);
+      return card;
+    }
+
+    function renderMerge(step) {
+      const data = step.mergeState;
+      visualCanvas.innerHTML = '';
+      if (!data) return;
+
+      const stage = document.createElement('div');
+      stage.className = 'merge-stage';
+
+      const headline = document.createElement('div');
+      headline.className = 'merge-headline';
+      headline.innerHTML = `
+        <strong>Range A[${formatRange(data.focus.range)}]</strong>
+        <span>Watch the large rectangle split, reach the base case, then merge back into sorted order.</span>
+      `;
+      stage.appendChild(headline);
+
+      const flow = document.createElement('div');
+      flow.className = 'merge-flow';
+      flow.appendChild(createMergeCard({
+        title: 'Current Segment',
+        subtitle: `Indices ${formatRange(data.focus.range)}`,
+        tag: data.stage.replace('-', ' '),
+        values: data.focus.values,
+        range: data.focus.range,
+        role: data.stage === 'base' ? 'base' : data.stage.includes('merge') || data.stage === 'temp-arrays' ? 'merge' : 'focus',
+        emphasisIndices: data.stage === 'base' ? [0] : []
+      }));
+
+      if (data.split) {
+        const arrow1 = document.createElement('div');
+        arrow1.className = 'merge-arrow';
+        arrow1.textContent = '⇣ split ⇣';
+        flow.appendChild(arrow1);
+
+        const splitRow = document.createElement('div');
+        splitRow.className = 'merge-split-row';
+        splitRow.appendChild(createMergeCard({
+          title: 'Left Half',
+          subtitle: `A[${formatRange(data.split.left.range)}]`,
+          tag: data.focusChild === 'left' ? 'active' : 'half',
+          values: data.split.left.values,
+          range: data.split.left.range,
+          role: data.focusChild === 'left' ? 'left focus' : 'left',
+          emphasisIndices: data.focusChild === 'left' ? data.split.left.values.map((_, idx) => idx) : []
+        }));
+        splitRow.appendChild(createMergeCard({
+          title: 'Right Half',
+          subtitle: `A[${formatRange(data.split.right.range)}]`,
+          tag: data.focusChild === 'right' ? 'active' : 'half',
+          values: data.split.right.values,
+          range: data.split.right.range,
+          role: data.focusChild === 'right' ? 'right focus' : 'right',
+          emphasisIndices: data.focusChild === 'right' ? data.split.right.values.map((_, idx) => idx) : []
+        }));
+        flow.appendChild(splitRow);
+      }
+
+      if (data.L && data.R) {
+        const arrow2 = document.createElement('div');
+        arrow2.className = 'merge-arrow';
+        arrow2.textContent = '⇣ compare & conquer ⇣';
+        flow.appendChild(arrow2);
+
+        const tempRow = document.createElement('div');
+        tempRow.className = 'merge-temp-row';
+        tempRow.appendChild(createMergeCard({
+          title: 'Temporary L',
+          subtitle: 'Left buffer',
+          tag: 'L',
+          values: data.L,
+          range: [data.focus.range[0], data.focus.range[0] + data.L.length - 1],
+          role: 'left',
+          emphasisIndices: Number.isInteger(data.compareLeft) ? [data.compareLeft] : []
+        }));
+        tempRow.appendChild(createMergeCard({
+          title: 'Temporary R',
+          subtitle: 'Right buffer',
+          tag: 'R',
+          values: data.R,
+          range: [data.focus.range[0] + data.L.length, data.focus.range[1]],
+          role: 'right',
+          emphasisIndices: Number.isInteger(data.compareRight) ? [data.compareRight] : []
+        }));
+        flow.appendChild(tempRow);
+      }
+
+      const pills = document.createElement('div');
+      pills.className = 'merge-step-strip';
+      [
+        { label: 'Divide', active: data.stage.includes('split') || data.stage === 'call' || data.stage === 'inspect' },
+        { label: 'Conquer', active: data.stage === 'base' },
+        { label: 'Combine', active: data.stage.includes('merge') || data.stage.startsWith('write') || data.stage.startsWith('copy') || data.stage === 'temp-arrays' },
+        { label: 'Sorted', active: data.stage === 'merged' || data.stage === 'done' }
+      ].forEach(item => {
+        const pill = document.createElement('div');
+        pill.className = `merge-step-pill ${item.active ? 'active' : ''}`.trim();
+        pill.textContent = item.label;
+        pills.appendChild(pill);
+      });
+      flow.appendChild(pills);
+
+      if (data.resultValues || data.resultPreview) {
+        const arrow3 = document.createElement('div');
+        arrow3.className = 'merge-arrow';
+        arrow3.textContent = '⇣ combined result ⇣';
+        flow.appendChild(arrow3);
+
+        const resultValues = data.resultValues || data.resultPreview;
+        flow.appendChild(createMergeCard({
+          title: 'Combined Output',
+          subtitle: `A[${formatRange(data.focus.range)}] rebuilding in order`,
+          tag: data.stage === 'merged' || data.stage === 'done' ? 'sorted' : 'building',
+          values: resultValues,
+          range: [data.focus.range[0], data.focus.range[0] + resultValues.length - 1],
+          role: data.stage === 'merged' || data.stage === 'done' ? 'result' : 'merge',
+          resultIndices: resultValues.map((_, idx) => idx)
+        }));
+      }
+
+      stage.appendChild(flow);
+      visualCanvas.appendChild(stage);
+    }
+
+    function renderBinary(step) {
+      const info = step.binaryState;
+      visualCanvas.innerHTML = '';
+      if (!info) return;
+
+      const stage = document.createElement('div');
+      stage.className = 'binary-stage';
+
+      const summary = document.createElement('div');
+      summary.className = 'binary-summary';
+      const summaryItems = [
+        { label: 'low', value: Number.isInteger(info.low) ? info.low + 1 : '—' },
+        { label: 'mid', value: Number.isInteger(info.mid) ? info.mid + 1 : '—' },
+        { label: 'high', value: Number.isInteger(info.high) ? info.high + 1 : '—' }
+      ];
+      summaryItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'binary-summary-card';
+        card.innerHTML = `<span>${item.label}</span><strong>${item.value}</strong>`;
+        summary.appendChild(card);
+      });
+      stage.appendChild(summary);
+
+      const track = document.createElement('div');
+      track.className = 'binary-track';
+
+      const arrows = document.createElement('div');
+      arrows.className = 'binary-arrows';
+      arrows.style.setProperty('--cols', step.array.length);
+
+      const cells = document.createElement('div');
+      cells.className = 'binary-cells';
+      cells.style.setProperty('--cols', step.array.length);
+
+      step.array.forEach((value, idx) => {
+        const slot = document.createElement('div');
+        slot.className = 'binary-arrow-slot';
+        const labels = [];
+        if (info.low === idx) labels.push({ text: 'low', cls: 'low' });
+        if (info.mid === idx) labels.push({ text: info.found ? 'found' : 'mid', cls: info.found ? 'found' : 'mid' });
+        if (info.high === idx) labels.push({ text: 'high', cls: 'high' });
+        labels.forEach(label => {
+          const arrow = document.createElement('div');
+          arrow.className = `binary-arrow ${label.cls}`;
+          arrow.textContent = label.text;
+          slot.appendChild(arrow);
+        });
+        arrows.appendChild(slot);
+
+        const cell = document.createElement('div');
+        cell.className = 'binary-cell';
+        const inActiveRange = info.activeRange && idx >= info.activeRange[0] && idx <= info.activeRange[1];
+        const inDiscardLeft = info.discardLeft && idx >= info.discardLeft[0] && idx <= info.discardLeft[1];
+        const inDiscardRight = info.discardRight && idx >= info.discardRight[0] && idx <= info.discardRight[1];
+
+        if (inActiveRange) cell.classList.add('in-range');
+        if (inDiscardLeft || inDiscardRight) cell.classList.add('discarded');
+        if (info.low === idx) cell.classList.add('low-focus');
+        if (info.mid === idx) cell.classList.add('mid-focus');
+        if (info.high === idx) cell.classList.add('high-focus');
+        if (step.foundIndex === idx || info.found) cell.classList.toggle('found', step.foundIndex === idx);
+        if (value === step.targetValue) cell.classList.add('target-cell');
+        if (info.direction === 'right' && inDiscardLeft) cell.classList.add('note-right');
+        if (info.direction === 'left' && inDiscardRight) cell.classList.add('note-left');
+
+        cell.innerHTML = `
+          <span class="binary-cell-index">${idx + 1}</span>
+          <span class="binary-cell-value">${value}</span>
+        `;
+        cells.appendChild(cell);
+      });
+
+      track.appendChild(arrows);
+      track.appendChild(cells);
+      stage.appendChild(track);
+
+      const decision = document.createElement('div');
+      decision.className = 'binary-decision';
+      decision.innerHTML = `<strong>Step logic:</strong> ${info.decision}`;
+      stage.appendChild(decision);
+
+      visualCanvas.appendChild(stage);
+    }
+
+    function renderVisual(step) {
+      if (state.algorithm === 'merge') {
+        renderMerge(step);
+      } else if (state.algorithm === 'binary') {
+        renderBinary(step);
+      } else {
+        renderInsertionBars(step);
+      }
+    }
+
+    function renderPseudocode() {
+      pseudocodeEl.innerHTML = '';
+      const lines = PSEUDOCODE[state.algorithm].lines;
+      const currentLine = state.steps[state.index]?.line;
+
+      lines.forEach(line => {
+        const row = document.createElement('div');
+        row.className = 'line';
+        if (currentLine === line.n) row.classList.add('active');
+        row.innerHTML = `<span class="num">${line.n}</span><span>${line.text}</span>`;
+        pseudocodeEl.appendChild(row);
+      });
+    }
+
+    function renderVariables(step) {
+      variablesEl.innerHTML = '';
+      const entries = Object.entries(step.vars || {});
+
+      if (!entries.length) {
+        const empty = document.createElement('div');
+        empty.className = 'var-card';
+        empty.innerHTML = '<span class="var-name">Info</span><div class="var-value">No variables on this step.</div>';
+        variablesEl.appendChild(empty);
+        return;
+      }
+
+      entries.forEach(([key, value]) => {
+        const card = document.createElement('div');
+        card.className = 'var-card';
+        card.innerHTML = `<span class="var-name">${key}</span><div class="var-value">${value}</div>`;
+        variablesEl.appendChild(card);
+      });
+    }
+
+    function renderStatus(step) {
+      const name = PSEUDOCODE[state.algorithm].name;
+      algoName.textContent = name;
+      stepLabel.textContent = `${state.index + 1} / ${state.steps.length}`;
+      lineLabel.textContent = step.line ?? '-';
+      messageBox.textContent = step.message || 'Ready.';
+
+      timeline.max = Math.max(0, state.steps.length - 1);
+      timeline.value = state.index;
+      timelineStart.textContent = 'Step 1';
+      timelineEnd.textContent = `Step ${state.steps.length}`;
+
+      let note = `${name} loaded with ${step.array.length} elements.`;
+      if (state.algorithm === 'binary') {
+        note += ' The array is shown as cells with live low, mid, and high arrows while discarded halves fade away.';
+      } else if (state.algorithm === 'merge') {
+        note += ' The visualization now follows divide → conquer → combine using large rectangles and split panels.';
+      } else {
+        note += ' Insertion sort grows the sorted prefix one element at a time.';
+      }
+      statusNote.innerHTML = `<strong>Status:</strong> ${note}`;
+    }
+
+    function render() {
+      const step = state.steps[state.index];
+      if (!step) return;
+      renderStatus(step);
+      renderVisual(step);
+      renderLegend(step);
+      renderPseudocode();
+      renderVariables(step);
+    }
+
+    function buildVisualization() {
+      stopPlayback();
+
+      try {
+        const algorithm = algorithmSelect.value;
+        const inputArr = parseArrayInput();
+        const target = Number(targetInput.value);
+        if (Number.isNaN(target)) {
+          throw new Error('Please enter a valid binary search target.');
+        }
+
+        state.algorithm = algorithm;
+        state.currentArray = snapshotArray(inputArr);
+        state.target = target;
+
+        if (algorithm === 'insertion') {
+          state.steps = buildInsertionSteps(inputArr);
+        } else if (algorithm === 'merge') {
+          state.steps = buildMergeSteps(inputArr);
+        } else {
+          state.steps = buildBinarySteps(inputArr, target);
+        }
+
+        state.index = 0;
+        render();
+      } catch (err) {
+        statusNote.innerHTML = `<strong>Status:</strong> ${err.message}`;
+      }
+    }
+
+    function loadDemo() {
+      const algorithm = algorithmSelect.value;
+      const demo = DEMOS[algorithm];
+      setArrayInput(demo.arr);
+      targetInput.value = demo.target;
+      buildVisualization();
+    }
+
+    function randomizeCurrent() {
+      const algorithm = algorithmSelect.value;
+      const size = clamp(Number(sizeInput.value) || 8, 3, 14);
+      let arr = randomArray(size);
+      if (algorithm === 'binary') {
+        arr = arr.sort((a, b) => a - b);
+        targetInput.value = arr[Math.floor(arr.length / 2)];
+      }
+      setArrayInput(arr);
+      buildVisualization();
+    }
+
+    algorithmSelect.addEventListener('change', () => {
+      const algorithm = algorithmSelect.value;
+      if (DEMOS[algorithm]) {
+        const demo = DEMOS[algorithm];
+        setArrayInput(demo.arr);
+        targetInput.value = demo.target;
+      }
+      buildVisualization();
+    });
+
+    speedInput.addEventListener('input', updateSpeed);
+    buildBtn.addEventListener('click', buildVisualization);
+    demoBtn.addEventListener('click', loadDemo);
+    randomBtn.addEventListener('click', randomizeCurrent);
+
+    prevBtn.addEventListener('click', () => {
+      stopPlayback();
+      state.index = Math.max(0, state.index - 1);
+      render();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      stopPlayback();
+      state.index = Math.min(state.steps.length - 1, state.index + 1);
+      render();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      stopPlayback();
+      state.index = 0;
+      render();
+    });
+
+    playBtn.addEventListener('click', () => {
+      if (!state.steps.length) return;
+      if (state.playing) {
+        stopPlayback();
+      } else {
+        startPlayback();
+      }
+    });
+
+    timeline.addEventListener('input', () => {
+      stopPlayback();
+      state.index = Number(timeline.value);
+      render();
+    });
+
+    sizeInput.addEventListener('change', () => {
+      sizeInput.value = clamp(Number(sizeInput.value) || 8, 3, 14);
+    });
+
+    updateSpeed();
+    loadDemo();
+  </script>
+</body>
+</html>
